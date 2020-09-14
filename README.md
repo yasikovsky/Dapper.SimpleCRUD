@@ -5,7 +5,32 @@ Dapper.SimpleCRUD - simple CRUD helpers for Dapper
 
 This is a fork of original Dapper.SimpleCRUD by Eric Coffman.
 It has integrated the following fixes and enhancements:
-  - Support for custom type parameters (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/221) by CyrilB1531
+  - Support for custom type handlers (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/221) by CyrilB1531
+    They are added by using `SimpleCRUD.AddTypeHandler(type, handler);`
+    
+    Example init:
+    
+    ```c#
+    SimpleCRUD.AddTypeHandler(typeof(List<Guid>), new ListTypeHandler<Guid>());
+    ```
+  
+    Example handler:
+    
+    ```c#
+    public class ListTypeHandler<T> : SqlMapper.TypeHandler<List<T>>
+    {
+        public override List<T> Parse(object value)
+        {
+            return ((T[]) value).ToList();
+        }
+        
+        public override void SetValue(IDbDataParameter parameter, List<T> value)
+        {
+            parameter.Value = value.ToArray();
+        }
+    }
+    ```
+  
   - Support for anonymous object conditions with arrays (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/225) by Alexandr Parashin (SwopDaWoop)
 
 Features
