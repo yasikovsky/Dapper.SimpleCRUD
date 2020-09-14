@@ -129,6 +129,19 @@ namespace Dapper.SimpleCRUDTests
         public string ExtraProperty { get; set; }
     }
 
+    public class TypeMapColumnNames
+    {
+        [Key]
+        [Column("ItemId")]
+        public int Id { get; set; }
+        [Column("typemappedcolumn")]
+        public TypeMapColumnName TypeMappedColumn { get; set; }
+    }
+    public class TypeMapColumnName
+    {
+        public string Content { get; set; }
+    }
+    
     public class IgnoreColumns
     {
         [Key]
@@ -168,8 +181,28 @@ namespace Dapper.SimpleCRUDTests
         public Tests(SimpleCRUD.Dialect dbtype)
         {
             _dbtype = dbtype;
+            SimpleCRUD.AddTypeHandler(typeof(TypeMapColumnName), TypeMapColumnNamesHandler.Instance);
         }
         private SimpleCRUD.Dialect _dbtype;
+        
+        class TypeMapColumnNamesHandler : SqlMapper.TypeHandler<TypeMapColumnName>
+        {
+            private TypeMapColumnNamesHandler() { }
+            public static TypeMapColumnNamesHandler Instance { get; } = new TypeMapColumnNamesHandler();
+            public override TypeMapColumnName Parse(object value)
+            {
+                var content = (string)value;
+                return content == null ? null : new TypeMapColumnName{ Content = content};
+            }
+            public override void SetValue(IDbDataParameter parameter, TypeMapColumnName value)
+            {
+                if(value == null)
+                    parameter.Value = DBNull.Value;
+                else
+                    parameter.Value = value.Content;
+                parameter.DbType = DbType.String;
+            }
+        }
 
         private IDbConnection GetOpenConnection()
         {
@@ -347,7 +380,21 @@ namespace Dapper.SimpleCRUDTests
                 connection.Execute("Delete from KeyMaster");
             }
         }
+        
+        public void TestFilteredGetListWithArrayParam()
+        {
+            using (var connection = GetOpenConnection())
+            {
+                connection.Insert(new User { Name = "TestFilteredGetList1", Age = 10 });
+                connection.Insert(new User { Name = "TestFilteredGetList2", Age = 11 });
+                connection.Insert(new User { Name = "TestFilteredGetList3", Age = 12 });
+                connection.Insert(new User { Name = "TestFilteredGetList4", Age = 13 });
 
+                var user = connection.GetList<User>(new { Age = new [] { 10,11,12 } });
+                user.Count().IsEqualTo(3);
+                connection.Execute("Delete from Users");
+            }
+        }
 
         public void TestFilteredWithSQLGetList()
         {
@@ -1323,6 +1370,60 @@ namespace Dapper.SimpleCRUDTests
                 allColumnDapper.IgnoreAll.IsNull();
 
                 connection.Delete<IgnoreColumns>(itemId);
+            }
+        }
+        
+         // TypeHandler Tests
+        public void TestInsertWithTypeHandledColumn()
+        {
+            using (var connection = GetOpenConnection())
+            {
+                var itemId = connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 1" }});
+                itemId.IsEqualTo(1);
+                connection.Delete<TypeMapColumnNames>(itemId);
+            }
+        }
+
+        public void TestSimpleGetListWithTypeHandledColumn()
+        {
+            using (var connection = GetOpenConnection())
+            {
+                var id1 = connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 2"} });
+                var id2 = connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 3"} });
+                var mappedColumns = connection.GetList<TypeMapColumnNames>(new { });
+                mappedColumns.First().TypeMappedColumn.Content.IsEqualTo("TypeMapColumnName 2");
+                mappedColumns.Count().IsEqualTo(2);
+                connection.Delete<TypeMapColumnNames>(id1);
+                connection.Delete<TypeMapColumnNames>(id2);
+            }
+        }
+
+        public void TestUpdateWithTypeHandledColumn()
+        {
+            using (var connection = GetOpenConnection())
+            {
+                var newid = (int)connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName Insert"} });
+                var newitem = connection.Get<TypeMapColumnNames>(newid);
+                newitem.TypeMappedColumn.Content = "TypeMapColumnName Update";
+                connection.Update(newitem);
+                var updateditem = connection.Get<TypeMapColumnNames>(newid);
+                updateditem.TypeMappedColumn.Content.IsEqualTo("TypeMapColumnName Update");
+                connection.Delete<TypeMapColumnNames>(newid);
+            }
+        }
+
+        public void TestFilteredGetListWithTypeHandledColumn()
+        {
+            using (var connection = GetOpenConnection())
+            {
+                connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 1"} });
+                connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 2"} });
+                connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 2"} });
+                connection.Insert(new TypeMapColumnNames { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 2"} });
+
+                var strange = connection.GetList<TypeMapColumnNames>(new { TypeMappedColumn = new TypeMapColumnName{ Content = "TypeMapColumnName 2"} });
+                strange.Count().IsEqualTo(3);
+                connection.Execute("Delete from TypeMapColumnNames");
             }
         }
 
