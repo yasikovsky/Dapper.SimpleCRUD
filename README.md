@@ -1,5 +1,13 @@
 Dapper.SimpleCRUD - simple CRUD helpers for Dapper
 ========================================
+
+**Fork info**
+
+This is a fork of original Dapper.SimpleCRUD by Eric Coffman.
+It has integrated the following fixes and enhancements:
+  - Support for custom type parameters (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/221) by CyrilB1531
+  - Support for anonymous object conditions with arrays (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/225) by Alexandr Parashin (SwopDaWoop)
+
 Features
 --------
 <img  align="right" src="https://raw.githubusercontent.com/ericdc1/Dapper.SimpleCRUD/master/images/SimpleCRUD-200x200.png" alt="SimpleCRUD">
