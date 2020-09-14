@@ -28,6 +28,8 @@ namespace Dapper
 
         private static readonly ConcurrentDictionary<Type, string> TableNames = new ConcurrentDictionary<Type, string>();
         private static readonly ConcurrentDictionary<string, string> ColumnNames = new ConcurrentDictionary<string, string>();
+        private static readonly List<Type> TypesWithHandlers = new List<Type>();
+        private static object locker = new object();
 
         private static readonly ConcurrentDictionary<string, string> StringBuilderCacheDict = new ConcurrentDictionary<string, string>();
         private static bool StringBuilderCacheEnabled = true;
@@ -118,6 +120,37 @@ namespace Dapper
             _columnNameResolver = resolver;
         }
 
+        /// <summary>
+        /// Configure the specified type to be processed by a custom handler.
+        /// </summary>
+        /// <param name="type">The type to handle.</param>
+        /// <param name="handler">The handler to process the <paramref name="type"/>.</param>
+        public static void AddTypeHandler(Type type, SqlMapper.ITypeHandler handler)
+        {
+            lock (locker)
+            {
+                if (!TypesWithHandlers.Contains(type))
+                    TypesWithHandlers.Add(type);
+            }
+            SqlMapper.AddTypeHandler(type, handler);
+        }
+
+        /// <summary>
+        /// Configure the specified type to be processed by a custom handler.
+        /// </summary>
+        /// <typeparam name="T">The type to handle.</typeparam>
+        /// <param name="handler">The handler for the type <typeparamref name="T"/>.</param>
+        public static void AddTypeHandler<T>(SqlMapper.TypeHandler<T> handler)
+        {
+            lock (locker)
+            {
+                var type = typeof(T);
+                if (!TypesWithHandlers.Contains(type))
+                    TypesWithHandlers.Add(type);
+            }
+            SqlMapper.AddTypeHandler<T>(handler);
+        }
+        
         /// <summary>
         /// <para>By default queries the table matching the class name</para>
         /// <para>-Table name can be overridden by adding an attribute on your class [Table("YourTableName")]</para>
@@ -737,7 +770,7 @@ namespace Dapper
                     }
                 }
                 sb.AppendFormat(
-                    useIsNull ? "{0} is null" : "{0} = @{1}",
+                    useIsNull ? "{0} is null" : propertyInfos[i].PropertyType.IsArray ? "{0} in @{1}" : "{0} = @{1}",
                     GetColumnName(propertyToUse),
                     propertyToUse.Name);
 
@@ -832,7 +865,7 @@ namespace Dapper
             props = props.Where(p => p.GetCustomAttributes(true).Any(attr => attr.GetType().Name == typeof(EditableAttribute).Name && !IsEditable(p)) == false);
 
 
-            return props.Where(p => p.PropertyType.IsSimpleType() || IsEditable(p));
+            return props.Where(p => p.PropertyType.IsSimpleType() || IsEditable(p) || TypesWithHandlers.Any(a => a == p.PropertyType));
         }
 
         //Determine if the Attribute has an AllowEdit key and return its boolean state
@@ -1218,6 +1251,6 @@ internal static class TypeExtension
 
     public static string CacheKey(this IEnumerable<PropertyInfo> props)
     {
-        return string.Join(",",props.Select(p=> p.DeclaringType.FullName + "." + p.Name).ToArray());
+        return string.Join(",", props.Select(p => p.DeclaringType.FullName + "." + p.Name).ToArray());
     }
 }
