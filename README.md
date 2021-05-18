@@ -6,7 +6,8 @@ Dapper.SimpleCRUD - simple CRUD helpers for Dapper
 This is a fork of original Dapper.SimpleCRUD by Eric Coffman.
 It has integrated the following fixes and enhancements:
   - Support for custom type handlers (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/221) by CyrilB1531
-    They are added by using `SimpleCRUD.AddTypeHandler(type, handler);`
+   
+   They are added by using `SimpleCRUD.AddTypeHandler(type, handler);`
     
     Example init:
     
