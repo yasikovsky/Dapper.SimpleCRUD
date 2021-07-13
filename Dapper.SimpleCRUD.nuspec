@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Dapper.SimpleCRUD.yasikovsky</id>
-    <version>2.3.0.1</version>
+    <version>2.3.1</version>
     <title>Dapper.SimpleCRUD.yasikovsky</title>
     <authors>Eric Coffman (original), Michal Jasikowski (fork)</authors>
     <owners>Eric Coffman (original), Michal Jasikowski (fork)</owners>
@@ -56,11 +56,9 @@
 	* version 2.0.1 Re-add SQLite, allow string primary keys
 	* version 2.1.0 Speed improvements (thanks jonathanlarouche)
 	* version 2.2.0 Dapper 2.x support
-<<<<<<< HEAD
 	* version 2.2.1 Support for custom type parameters, support for anonymous object conditions with arrays
-=======
 	* version 2.3.0 Update DB2 support (mvaz77), Interface support (jonathanlarouche)
->>>>>>> 3fcd129fa9289acd7d2ebc9a801572d8661fc1f4
+  * version 2.3.1 Support for JSON casting for PostgreSQL
 	</releaseNotes>
     <copyright>Copyright Eric Coffman 2019</copyright>
     <tags>orm dapper micro-orm CRUD</tags>
