@@ -714,7 +714,15 @@ namespace Dapper
                 {
                     var property = nonIdProps[i];
 
-                    sb.AppendFormat("{0} = @{1}", GetColumnName(property), property.Name);
+                    if (_dialect == Dialect.PostgreSQL && property.GetCustomAttributes(true).Any(attr =>
+                        attr.GetType().Name == nameof(JsonColumnAttribute)))
+                    {
+                        sb.AppendFormat("{0} = @{1}::json", GetColumnName(property), property.Name);
+                    }
+                    else {
+                        sb.AppendFormat("{0} = @{1}", GetColumnName(property), property.Name);
+                    }
+                    
                     if (i < nonIdProps.Length - 1)
                         sb.AppendFormat(", ");
                 }
@@ -806,7 +814,15 @@ namespace Dapper
 
                     if (property.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) && property.GetCustomAttributes(true).All(attr => attr.GetType().Name != typeof(RequiredAttribute).Name) && property.PropertyType != typeof(Guid)) continue;
 
-                    sb.AppendFormat("@{0}", property.Name);
+                    if (_dialect == Dialect.PostgreSQL && property.GetCustomAttributes(true).Any(attr =>
+                        attr.GetType().Name == typeof(JsonColumnAttribute).Name))
+                    {
+                        sb.AppendFormat("@{0}::json", property.Name);
+                    }
+                    else {
+                        sb.AppendFormat("@{0}", property.Name);
+                    }
+                    
                     if (i < props.Count() - 1)
                         sb.Append(", ");
                 }
