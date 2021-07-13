@@ -1,27 +1,19 @@
 ﻿<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-<<<<<<< HEAD
     <id>Dapper.SimpleCRUD.yasikovsky</id>
-    <version>2.2.1</version>
+    <version>2.3.0.1</version>
     <title>Dapper.SimpleCRUD.yasikovsky</title>
     <authors>Eric Coffman (original), Michal Jasikowski (fork)</authors>
     <owners>Eric Coffman (original), Michal Jasikowski (fork)</owners>
     <projectUrl>http://github.com/yasikovsky/Dapper.SimpleCRUD/</projectUrl>
-=======
-    <id>Dapper.SimpleCRUD</id>
-    <version>2.3.0.0</version>
-    <title>Dapper.SimpleCRUD</title>
-    <authors>Eric Coffman</authors>
-    <owners>Eric Coffman</owners>
-    <projectUrl>http://github.com/ericdc1/Dapper.SimpleCRUD/</projectUrl>
->>>>>>> 3fcd129fa9289acd7d2ebc9a801572d8661fc1f4
     <license type="file">License.txt</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <icon>images\SimpleCRUD-200x200.png</icon>
     <description>
 	This is a fork of original Dapper.SimpleCRUD by Eric Coffman.
 	It has integrated the following fixes and enhancements:
+	  - Added automatic casting for PostgreSQL JSON based on the presence of [JsonColumn] property attribute (https://github.com/yasikovsky/Dapper.SimpleCRUD/commit/97e532d8d4e9b604246873f8593d60327e65ac53)
 	  - Support for custom type parameters (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/221) by CyrilB1531
 	  - Support for anonymous object conditions with arrays (https://github.com/ericdc1/Dapper.SimpleCRUD/pull/225) by Alexandr Parashin (SwopDaWoop)
 	    
